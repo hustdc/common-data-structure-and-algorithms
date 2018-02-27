@@ -15,39 +15,56 @@ public class TernaryTrie {
 		this.c = c;
 	}
 	
-    void put(String s) {
+    public void put(String s) {
     	TernaryTrie curTernaryTrie = this;
+    	TernaryTrie lastTernaryTrie = null;
+    	
     	for (int i = 0; i < s.length(); i++) {
     		char t = s.charAt(i);
+    		if (curTernaryTrie == null) {
+    			lastTernaryTrie.ternaryTrie[0] = new TernaryTrie(t);
+    			lastTernaryTrie = lastTernaryTrie.ternaryTrie[0];
+    			curTernaryTrie = null;
+    			continue;
+    		}
+    		
     		while (true) {
     			int diff = t - curTernaryTrie.c;
     			if (diff == 0) {
     				if (curTernaryTrie.ternaryTrie[0] == null) {
-    					curTernaryTrie.ternaryTrie[0] = new TernaryTrie(t);
+    					lastTernaryTrie = curTernaryTrie;
+    					curTernaryTrie = null;
     				} else {
+    					lastTernaryTrie = curTernaryTrie;
     					curTernaryTrie = curTernaryTrie.ternaryTrie[0];
     				}
+    				
     				break;
     			} else if (diff < 0) {
     				if (curTernaryTrie.ternaryTrie[1] == null) {
     					curTernaryTrie.ternaryTrie[1] = new TernaryTrie(t);
+    					lastTernaryTrie = curTernaryTrie.ternaryTrie[1];
+    					curTernaryTrie = null;
+    					break;
     				} else {
     					curTernaryTrie = curTernaryTrie.ternaryTrie[1];
     				}
-    				break;
+    				
     			} else {
     				if (curTernaryTrie.ternaryTrie[2] == null) {
     					curTernaryTrie.ternaryTrie[2] = new TernaryTrie(t);
+    					lastTernaryTrie = curTernaryTrie.ternaryTrie[2];
+    					curTernaryTrie = null;
+    					break;
     				} else {
     					curTernaryTrie = curTernaryTrie.ternaryTrie[2];
     				}
-    				break;
     			}
     		}
     	}
     }
     
-    ArrayList<String> get(String s) {
+    public ArrayList<String> get(String s) {
     	ArrayList<String> result = new ArrayList<String>();
     	ArrayDeque<Stack<TernaryTrie>> keyStackQueue = new ArrayDeque<Stack<TernaryTrie>>();
     	TernaryTrie curTernaryTrie = this;
@@ -59,11 +76,22 @@ public class TernaryTrie {
     		if (curTernaryTrie == null) {
     			return null;
     		}
-    		if (t == curTernaryTrie.c) {
-    			curTernaryTrie = curTernaryTrie.ternaryTrie[0];
-    			firstStack.push(curTernaryTrie);
-    		} else {
-    			return null;
+    		while (true) {
+    			if (t == curTernaryTrie.c) {
+        			firstStack.push(curTernaryTrie);
+        			curTernaryTrie = curTernaryTrie.ternaryTrie[0];
+        			break;
+        		} else if (t < curTernaryTrie.c){
+        			curTernaryTrie = curTernaryTrie.ternaryTrie[1];
+        			if (curTernaryTrie == null) {
+        				break;
+        			}
+        		} else {
+        			curTernaryTrie = curTernaryTrie.ternaryTrie[2];
+        			if (curTernaryTrie == null) {
+        				break;
+        			}
+        		}
     		}
     	}
     	
@@ -71,25 +99,25 @@ public class TernaryTrie {
     		result.add(s);
     		return result;
     	} else {
-    		keyStackQueue.add(firstStack);
     		firstStack.push(curTernaryTrie);
+    		keyStackQueue.add(firstStack);
     	}
     	
     	while (!keyStackQueue.isEmpty()) {
     		Stack<TernaryTrie> first = keyStackQueue.getFirst();
     		TernaryTrie tmpTernaryTrie = first.peek();
     		if (tmpTernaryTrie.ternaryTrie[1] != null) {
-    			Stack<TernaryTrie> newStack = (Stack<TernaryTrie>) first.clone();
-    			newStack.pop();
-    			newStack.push(tmpTernaryTrie.ternaryTrie[1]);
-    			keyStackQueue.addLast(newStack);
+    			Stack<TernaryTrie> newStackOne = (Stack<TernaryTrie>) first.clone();
+    			newStackOne.pop();
+    			newStackOne.push(tmpTernaryTrie.ternaryTrie[1]);
+    			keyStackQueue.addLast(newStackOne);
     		}
     		
             if (tmpTernaryTrie.ternaryTrie[2] != null) {
-            	Stack<TernaryTrie> newStack = (Stack<TernaryTrie>) first.clone();
-    			newStack.pop();
-    			newStack.push(tmpTernaryTrie.ternaryTrie[2]);
-    			keyStackQueue.addLast(newStack);
+            	Stack<TernaryTrie> newStackTwo = (Stack<TernaryTrie>) first.clone();
+            	newStackTwo.pop();
+            	newStackTwo.push(tmpTernaryTrie.ternaryTrie[2]);
+    			keyStackQueue.addLast(newStackTwo);
     		}
     		
     		if (tmpTernaryTrie.ternaryTrie[0] == null) {
@@ -105,7 +133,7 @@ public class TernaryTrie {
     		}
     	}
     	
-		return null;
+		return result;
     }
 	
 }
